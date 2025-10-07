@@ -16,6 +16,8 @@ const Profile = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [originalProfile, setOriginalProfile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
     newPassword: '',
@@ -28,12 +30,17 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    console.log('isEditing state changed to:', isEditing);
+  }, [isEditing]);
+
   const fetchProfile = async () => {
     try {
       console.log('Fetching profile from /api/profile...');
       const response = await api.get('/profile');
       console.log('Profile fetched successfully:', response.data);
       setProfile(response.data);
+      setOriginalProfile(response.data); // Store original data for cancel
       // If profilePicture exists and is a relative path, make it absolute
       const profilePic = response.data.profilePicture;
       if (profilePic) {
@@ -54,13 +61,15 @@ const Profile = () => {
         console.error('Server responded with:', error.response.status, error.response.data);
       }
       // Dummy data if backend not connected
-      setProfile({
+      const dummyData = {
         userId: 1,
         name: 'Anuradha Herath',
         email: 'anuradha@example.com',
         phone: '+94771234567',
         profilePicture: ''
-      });
+      };
+      setProfile(dummyData);
+      setOriginalProfile(dummyData);
       setPreview(defaultAvatar);
       toast.error('Failed to fetch profile. Using dummy data.');
     }
@@ -68,8 +77,23 @@ const Profile = () => {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    
+    // Only allow submission when in editing mode
+    if (!isEditing) {
+      console.log('Not in editing mode, preventing submit');
+      return;
+    }
+    
+    // Prevent multiple submissions
+    if (isSubmitting || loading) {
+      console.log('Already submitting, skipping...');
+      return;
+    }
+    
+    setIsSubmitting(true);
     setLoading(true);
     console.log('Updating profile with data:', { name: profile.name, email: profile.email, phone: profile.phone });
+    
     try {
       const response = await api.put('/profile/update', {
         name: profile.name,
@@ -79,8 +103,7 @@ const Profile = () => {
       console.log('Profile update response:', response.data);
       toast.success('Profile updated successfully');
       setIsEditing(false);
-      // Refresh profile data
-      await fetchProfile();
+      setOriginalProfile(profile); // Update original after successful save
     } catch (error) {
       console.error('Error updating profile:', error);
       if (error.response) {
@@ -91,7 +114,33 @@ const Profile = () => {
       }
     } finally {
       setLoading(false);
+      // Add a small delay before allowing next submission
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 500);
     }
+  };
+
+  const handleCancelEdit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Cancel button clicked');
+    // Restore original profile data
+    if (originalProfile) {
+      setProfile(originalProfile);
+    }
+    setIsEditing(false);
+  };
+
+  const handleEditClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Edit Profile button clicked');
+    console.log('Current isEditing state:', isEditing);
+    setIsEditing(prev => {
+      console.log('Setting isEditing from', prev, 'to true');
+      return true;
+    });
   };
 
   const handlePasswordChange = async (e) => {
@@ -190,6 +239,7 @@ const Profile = () => {
                 />
                 {selectedFile && (
                   <button
+                    type="button"
                     onClick={handleUploadPicture}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                     disabled={loading}
@@ -200,7 +250,12 @@ const Profile = () => {
               </div>
             </div>
 
-            <form onSubmit={handleProfileUpdate}>
+            <form onSubmit={handleProfileUpdate} onKeyDown={(e) => {
+              // Prevent Enter key from submitting when not editing
+              if (e.key === 'Enter' && !isEditing) {
+                e.preventDefault();
+              }
+            }}>
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2">Name</label>
                 <input
@@ -237,7 +292,7 @@ const Profile = () => {
                 {!isEditing ? (
                   <button
                     type="button"
-                    onClick={() => setIsEditing(true)}
+                    onClick={handleEditClick}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                   >
                     Edit Profile
@@ -253,7 +308,7 @@ const Profile = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIsEditing(false)}
+                      onClick={handleCancelEdit}
                       className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                     >
                       Cancel
