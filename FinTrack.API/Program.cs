@@ -76,6 +76,8 @@ app.UseCors("AllowFrontend");
 // Only use HTTPS redirection in production or when HTTPS is configured
 // app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
