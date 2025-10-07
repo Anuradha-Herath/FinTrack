@@ -18,9 +18,15 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int? limit)
     {
         var transactions = await _transactionService.GetAllAsync();
+        
+        if (limit.HasValue && limit.Value > 0)
+        {
+            transactions = transactions.Take(limit.Value).ToList();
+        }
+        
         return Ok(transactions);
     }
 

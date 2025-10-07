@@ -23,12 +23,17 @@ public class ReportsController : ControllerBase
         return Ok(summary);
     }
 
+    [HttpGet("income-expense-summary")]
+    public async Task<IActionResult> GetIncomeExpenseSummary()
+    {
+        var summary = await _reportService.GetIncomeExpenseSummaryAsync();
+        return Ok(summary);
+    }
+
     [HttpGet("transactions-by-category")]
     public async Task<IActionResult> GetTransactionsByCategory()
     {
         var report = await _reportService.GetTransactionsByCategoryAsync();
         return Ok(report);
     }
-
-    // Add more report endpoints as needed
 }
