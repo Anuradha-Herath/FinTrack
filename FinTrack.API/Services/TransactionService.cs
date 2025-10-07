@@ -7,76 +7,165 @@ namespace FinTrack.API.Services;
 public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository _transactionRepository;
+    private readonly IAccountRepository _accountRepository;
 
-    public TransactionService(ITransactionRepository transactionRepository)
+    public TransactionService(ITransactionRepository transactionRepository, IAccountRepository accountRepository)
     {
         _transactionRepository = transactionRepository;
+        _accountRepository = accountRepository;
     }
 
-    public async Task<IEnumerable<TransactionDto>> GetAllAsync()
+    public async Task<IEnumerable<TransactionDto>> GetAllByUserIdAsync(int userId)
     {
-        var transactions = await _transactionRepository.GetAllAsync();
-        return transactions.Select(t => new TransactionDto
-        {
-            Id = t.Id,
-            Description = t.Description,
-            Amount = t.Amount,
-            Date = t.Date,
-            AccountId = t.AccountId,
-            CategoryId = t.CategoryId
-        });
+        var transactions = await _transactionRepository.GetByUserIdAsync(userId);
+        return transactions.Select(MapToDto);
     }
 
-    public async Task<TransactionDto?> GetByIdAsync(int id)
+    public async Task<IEnumerable<TransactionDto>> GetByUserIdWithFiltersAsync(
+        int userId, 
+        string? type, 
+        string? category, 
+        DateTime? startDate, 
+        DateTime? endDate)
+    {
+        var transactions = await _transactionRepository.GetByUserIdWithFiltersAsync(
+            userId, type, category, startDate, endDate);
+        return transactions.Select(MapToDto);
+    }
+
+    public async Task<TransactionDto?> GetByIdAsync(int id, int userId)
     {
         var transaction = await _transactionRepository.GetByIdAsync(id);
-        if (transaction == null) return null;
-        return new TransactionDto
-        {
-            Id = transaction.Id,
-            Description = transaction.Description,
-            Amount = transaction.Amount,
-            Date = transaction.Date,
-            AccountId = transaction.AccountId,
-            CategoryId = transaction.CategoryId
-        };
+        if (transaction == null || transaction.UserId != userId) 
+            return null;
+        
+        return MapToDto(transaction);
     }
 
-    public async Task<TransactionDto> CreateAsync(TransactionDto dto)
+    public async Task<TransactionDto> CreateAsync(TransactionDto dto, int userId)
     {
         var transaction = new Transaction
         {
-            Description = dto.Description,
+            UserId = userId,
+            Type = dto.Type,
+            Category = dto.Category,
             Amount = dto.Amount,
             Date = dto.Date,
-            AccountId = dto.AccountId,
-            CategoryId = dto.CategoryId
+            Description = dto.Description,
+            AccountId = dto.AccountId
         };
+
         await _transactionRepository.AddAsync(transaction);
         await _transactionRepository.SaveChangesAsync();
+
+        // Update account balance if account is specified
+        if (dto.AccountId.HasValue)
+        {
+            await UpdateAccountBalance(dto.AccountId.Value, dto.Amount, dto.Type);
+        }
+
         dto.Id = transaction.Id;
         return dto;
     }
 
-    public async Task<bool> UpdateAsync(int id, TransactionDto dto)
+    public async Task<bool> UpdateAsync(int id, TransactionDto dto, int userId)
     {
         var transaction = await _transactionRepository.GetByIdAsync(id);
-        if (transaction == null) return false;
-        transaction.Description = dto.Description;
+        if (transaction == null || transaction.UserId != userId) 
+            return false;
+
+        // Revert old account balance
+        if (transaction.AccountId.HasValue)
+        {
+            await UpdateAccountBalance(transaction.AccountId.Value, transaction.Amount, 
+                transaction.Type == "Income" ? "Expense" : "Income");
+        }
+
+        transaction.Type = dto.Type;
+        transaction.Category = dto.Category;
         transaction.Amount = dto.Amount;
         transaction.Date = dto.Date;
+        transaction.Description = dto.Description;
         transaction.AccountId = dto.AccountId;
-        transaction.CategoryId = dto.CategoryId;
+
+        await _transactionRepository.SaveChangesAsync();
+
+        // Apply new account balance
+        if (dto.AccountId.HasValue)
+        {
+            await UpdateAccountBalance(dto.AccountId.Value, dto.Amount, dto.Type);
+        }
+
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(int id, int userId)
+    {
+        var transaction = await _transactionRepository.GetByIdAsync(id);
+        if (transaction == null || transaction.UserId != userId) 
+            return false;
+
+        // Revert account balance
+        if (transaction.AccountId.HasValue)
+        {
+            await UpdateAccountBalance(transaction.AccountId.Value, transaction.Amount, 
+                transaction.Type == "Income" ? "Expense" : "Income");
+        }
+
+        _transactionRepository.Remove(transaction);
         await _transactionRepository.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Dictionary<string, decimal>> GetSummaryAsync(int userId)
     {
-        var transaction = await _transactionRepository.GetByIdAsync(id);
-        if (transaction == null) return false;
-        _transactionRepository.Remove(transaction);
-        await _transactionRepository.SaveChangesAsync();
-        return true;
+        var transactions = await _transactionRepository.GetByUserIdAsync(userId);
+        
+        var totalIncome = transactions
+            .Where(t => t.Type == "Income")
+            .Sum(t => t.Amount);
+        
+        var totalExpense = transactions
+            .Where(t => t.Type == "Expense")
+            .Sum(t => t.Amount);
+
+        return new Dictionary<string, decimal>
+        {
+            { "totalIncome", totalIncome },
+            { "totalExpense", totalExpense },
+            { "balance", totalIncome - totalExpense }
+        };
+    }
+
+    private async Task UpdateAccountBalance(int accountId, decimal amount, string type)
+    {
+        var account = await _accountRepository.GetByIdAsync(accountId);
+        if (account != null)
+        {
+            if (type == "Income")
+            {
+                account.Balance += amount;
+            }
+            else if (type == "Expense")
+            {
+                account.Balance -= amount;
+            }
+            await _accountRepository.SaveChangesAsync();
+        }
+    }
+
+    private TransactionDto MapToDto(Transaction transaction)
+    {
+        return new TransactionDto
+        {
+            Id = transaction.Id,
+            Type = transaction.Type,
+            Category = transaction.Category,
+            Amount = transaction.Amount,
+            Date = transaction.Date,
+            Description = transaction.Description,
+            AccountId = transaction.AccountId,
+            AccountName = transaction.Account?.Name
+        };
     }
 }

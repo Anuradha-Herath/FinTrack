@@ -14,6 +14,7 @@ public class User
     public required string PasswordHash { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<Account>? Accounts { get; set; }
+    public ICollection<Transaction>? Transactions { get; set; }
     public ICollection<Budget>? Budgets { get; set; }
     public ICollection<Goal>? Goals { get; set; }
 }

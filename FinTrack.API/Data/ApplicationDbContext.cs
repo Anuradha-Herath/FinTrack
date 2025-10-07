@@ -25,14 +25,16 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(a => a.UserId);
 
         modelBuilder.Entity<Transaction>()
-            .HasOne(t => t.Account)
-            .WithMany(a => a.Transactions)
-            .HasForeignKey(t => t.AccountId);
+            .HasOne(t => t.User)
+            .WithMany(u => u.Transactions)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Transaction>()
-            .HasOne(t => t.Category)
-            .WithMany(c => c.Transactions)
-            .HasForeignKey(t => t.CategoryId);
+            .HasOne(t => t.Account)
+            .WithMany(a => a.Transactions)
+            .HasForeignKey(t => t.AccountId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Budget>()
             .HasOne(b => b.User)
