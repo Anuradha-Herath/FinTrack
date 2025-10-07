@@ -27,7 +27,10 @@ const Login = () => {
         setError(result.message || 'Login failed');
       }
     } catch (error) {
-      setError('Login failed. Please check your credentials.');
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.Message ||
+                          'Login failed. Please check your credentials.';
+      setError(errorMessage);
       console.error(error);
     } finally {
       setLoading(false);

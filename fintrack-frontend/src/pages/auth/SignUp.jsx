@@ -43,7 +43,9 @@ const SignUp = () => {
     }
 
     try {
-      const result = await authService.register(formData);
+      // Only send required fields to backend (exclude confirmPassword)
+      const { confirmPassword, ...registrationData } = formData;
+      const result = await authService.register(registrationData);
       if (result.success) {
         localStorage.setItem('token', result.token);
         dispatch(login({ user: result.user, token: result.token }));
@@ -52,7 +54,10 @@ const SignUp = () => {
         setError(result.message || 'Registration failed');
       }
     } catch (error) {
-      setError('Registration failed. Please try again.');
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.Message ||
+                          'Registration failed. Please try again.';
+      setError(errorMessage);
       console.error(error);
     } finally {
       setLoading(false);
