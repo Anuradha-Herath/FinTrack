@@ -6,45 +6,108 @@ namespace FinTrack.API.Services;
 public class ReportService : IReportService
 {
     private readonly IGenericRepository<Transaction> _transactionRepository;
-    private readonly IGenericRepository<Category> _categoryRepository;
 
-    public ReportService(
-        IGenericRepository<Transaction> transactionRepository,
-        IGenericRepository<Category> categoryRepository)
+    public ReportService(IGenericRepository<Transaction> transactionRepository)
     {
         _transactionRepository = transactionRepository;
-        _categoryRepository = categoryRepository;
     }
 
-    public async Task<object> GetSummaryAsync()
+    public async Task<object> GetSummaryAsync(int userId, int? month, int? year)
     {
         var transactions = await _transactionRepository.GetAllAsync();
-        var totalIncome = transactions.Where(t => t.Amount > 0).Sum(t => t.Amount);
-        var totalExpenses = transactions.Where(t => t.Amount < 0).Sum(t => Math.Abs(t.Amount));
-        var netBalance = totalIncome - totalExpenses;
-        
+        var query = transactions.Where(t => t.UserId == userId);
+
+        if (month.HasValue && year.HasValue)
+        {
+            query = query.Where(t => t.Date.Month == month.Value && t.Date.Year == year.Value);
+        }
+        else if (year.HasValue)
+        {
+            query = query.Where(t => t.Date.Year == year.Value);
+        }
+
+        var filteredTransactions = query.ToList();
+
+        var totalIncome = filteredTransactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+        var totalExpense = filteredTransactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+        var netSavings = totalIncome - totalExpense;
+
         return new
         {
             totalIncome,
-            totalExpenses,
-            netBalance
+            totalExpense,
+            netSavings
         };
     }
 
-    public async Task<object> GetIncomeExpenseSummaryAsync()
+    public async Task<object> GetExpensesByCategoryAsync(int userId, int? month, int? year)
     {
         var transactions = await _transactionRepository.GetAllAsync();
-        
+        var query = transactions.Where(t => t.UserId == userId && t.Type == "Expense");
+
+        if (month.HasValue && year.HasValue)
+        {
+            query = query.Where(t => t.Date.Month == month.Value && t.Date.Year == year.Value);
+        }
+        else if (year.HasValue)
+        {
+            query = query.Where(t => t.Date.Year == year.Value);
+        }
+
+        var filteredTransactions = query.ToList();
+
+        var expensesByCategory = filteredTransactions
+            .GroupBy(t => t.Category)
+            .Select(g => new
+            {
+                category = g.Key,
+                amount = g.Sum(t => t.Amount)
+            })
+            .OrderByDescending(x => x.amount)
+            .ToList();
+
+        return expensesByCategory;
+    }
+
+    public async Task<object> GetIncomeVsExpenseTrendAsync(int userId, int year)
+    {
+        var transactions = await _transactionRepository.GetAllAsync();
+        var query = transactions.Where(t => t.UserId == userId && t.Date.Year == year);
+
+        var filteredTransactions = query.ToList();
+
+        var trend = Enumerable.Range(1, 12)
+            .Select(month => new
+            {
+                month = new DateTime(year, month, 1).ToString("MMM"),
+                income = filteredTransactions
+                    .Where(t => t.Type == "Income" && t.Date.Month == month)
+                    .Sum(t => t.Amount),
+                expense = filteredTransactions
+                    .Where(t => t.Type == "Expense" && t.Date.Month == month)
+                    .Sum(t => t.Amount)
+            })
+            .ToList();
+
+        return trend;
+    }
+
+    public async Task<object> GetIncomeExpenseSummaryAsync(int userId)
+    {
+        var transactions = await _transactionRepository.GetAllAsync();
         // Group by month for the last 6 months
         var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
-        var monthlyData = transactions
-            .Where(t => t.Date >= sixMonthsAgo)
+        var query = transactions.Where(t => t.UserId == userId && t.Date >= sixMonthsAgo);
+
+        var filteredTransactions = query.ToList();
+
+        var monthlyData = filteredTransactions
             .GroupBy(t => new { t.Date.Year, t.Date.Month })
             .Select(g => new
             {
                 month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM"),
-                income = g.Where(t => t.Amount > 0).Sum(t => t.Amount),
-                expenses = Math.Abs(g.Where(t => t.Amount < 0).Sum(t => t.Amount))
+                income = g.Where(t => t.Type == "Income").Sum(t => t.Amount),
+                expenses = g.Where(t => t.Type == "Expense").Sum(t => t.Amount)
             })
             .OrderBy(x => x.month)
             .ToList();
@@ -52,29 +115,20 @@ public class ReportService : IReportService
         return monthlyData;
     }
 
-    public async Task<object> GetTransactionsByCategoryAsync()
+    public async Task<object> GetTransactionsByCategoryAsync(int userId)
     {
         var transactions = await _transactionRepository.GetAllAsync();
-        var categories = await _categoryRepository.GetAllAsync();
-        
-        // Only get expenses (negative amounts)
-        var expenseTransactions = transactions.Where(t => t.Amount < 0).ToList();
-        var totalExpenses = expenseTransactions.Sum(t => Math.Abs(t.Amount));
-        
-        var categoryData = expenseTransactions
-            .GroupBy(t => t.CategoryId)
-            .Select(g =>
+        var query = transactions.Where(t => t.UserId == userId && t.Type == "Expense");
+
+        var filteredTransactions = query.ToList();
+
+        var categoryData = filteredTransactions
+            .GroupBy(t => t.Category)
+            .Select(g => new
             {
-                var category = categories.FirstOrDefault(c => c.Id == g.Key);
-                var value = Math.Abs(g.Sum(t => t.Amount));
-                var percentage = totalExpenses > 0 ? Math.Round((value / totalExpenses) * 100, 1) : 0;
-                
-                return new
-                {
-                    name = category?.Name ?? "Uncategorized",
-                    value,
-                    percentage
-                };
+                name = g.Key,
+                value = g.Sum(t => t.Amount),
+                percentage = 0 // Will be calculated on frontend if needed
             })
             .OrderByDescending(x => x.value)
             .ToList();

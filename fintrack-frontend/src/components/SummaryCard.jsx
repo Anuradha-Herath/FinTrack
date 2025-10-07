@@ -1,4 +1,4 @@
-const SummaryCard = ({ title, amount, icon, color = 'blue', trend }) => {
+const SummaryCard = ({ title, amount, icon, color = 'blue', trend, currency = 'Rs.' }) => {
   const colorClasses = {
     green: {
       bg: 'bg-green-50',
@@ -34,7 +34,7 @@ const SummaryCard = ({ title, amount, icon, color = 'blue', trend }) => {
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
           <p className={`text-3xl font-bold ${colors.text}`}>
-            ${typeof amount === 'number' ? amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+            {currency}{typeof amount === 'number' ? amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
           </p>
           {trend && (
             <p className={`text-sm mt-2 ${trend.positive ? 'text-green-600' : 'text-red-600'}`}>

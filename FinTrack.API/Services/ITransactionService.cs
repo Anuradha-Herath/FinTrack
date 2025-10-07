@@ -6,6 +6,7 @@ public interface ITransactionService
 {
     Task<IEnumerable<TransactionDto>> GetAllByUserIdAsync(int userId);
     Task<IEnumerable<TransactionDto>> GetByUserIdWithFiltersAsync(int userId, string? type, string? category, DateTime? startDate, DateTime? endDate);
+    Task<IEnumerable<TransactionDto>> GetRecentByUserIdAsync(int userId, int limit = 10);
     Task<TransactionDto?> GetByIdAsync(int id, int userId);
     Task<TransactionDto> CreateAsync(TransactionDto dto, int userId);
     Task<bool> UpdateAsync(int id, TransactionDto dto, int userId);

@@ -34,14 +34,19 @@ public class TransactionsController : ControllerBase
         [FromQuery] string? type,
         [FromQuery] string? category,
         [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int? limit)
     {
         try
         {
             var userId = GetUserId();
             IEnumerable<TransactionDto> transactions;
 
-            if (!string.IsNullOrEmpty(type) || !string.IsNullOrEmpty(category) || startDate.HasValue || endDate.HasValue)
+            if (limit.HasValue)
+            {
+                transactions = await _transactionService.GetRecentByUserIdAsync(userId, limit.Value);
+            }
+            else if (!string.IsNullOrEmpty(type) || !string.IsNullOrEmpty(category) || startDate.HasValue || endDate.HasValue)
             {
                 transactions = await _transactionService.GetByUserIdWithFiltersAsync(userId, type, category, startDate, endDate);
             }

@@ -33,6 +33,15 @@ public class TransactionService : ITransactionService
         return transactions.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<TransactionDto>> GetRecentByUserIdAsync(int userId, int limit = 10)
+    {
+        var transactions = await _transactionRepository.GetByUserIdAsync(userId);
+        return transactions
+            .OrderByDescending(t => t.Date)
+            .Take(limit)
+            .Select(MapToDto);
+    }
+
     public async Task<TransactionDto?> GetByIdAsync(int id, int userId)
     {
         var transaction = await _transactionRepository.GetByIdAsync(id);
