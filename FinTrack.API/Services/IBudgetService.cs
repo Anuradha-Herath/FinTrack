@@ -1,12 +1,13 @@
+using FinTrack.API.DTOs;
 using FinTrack.API.Models;
 
 namespace FinTrack.API.Services;
 
 public interface IBudgetService
 {
-    Task<IEnumerable<Budget>> GetAllAsync();
-    Task<Budget?> GetByIdAsync(int id);
-    Task<Budget> CreateAsync(Budget budget);
-    Task<bool> UpdateAsync(int id, Budget budget);
-    Task<bool> DeleteAsync(int id);
+    Task<IEnumerable<BudgetResponseDto>> GetAllByUserIdAsync(int userId);
+    Task<BudgetResponseDto?> GetByIdAsync(int id, int userId);
+    Task<BudgetResponseDto> CreateAsync(int userId, BudgetDto budgetDto);
+    Task<BudgetResponseDto?> UpdateAsync(int id, int userId, BudgetDto budgetDto);
+    Task<bool> DeleteAsync(int id, int userId);
 }

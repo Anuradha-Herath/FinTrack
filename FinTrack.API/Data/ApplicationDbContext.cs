@@ -39,12 +39,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Budget>()
             .HasOne(b => b.User)
             .WithMany(u => u.Budgets)
-            .HasForeignKey(b => b.UserId);
+            .HasForeignKey(b => b.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
+        // Create unique index for budget per user, category, month, and year
         modelBuilder.Entity<Budget>()
-            .HasOne(b => b.Category)
-            .WithMany()
-            .HasForeignKey(b => b.CategoryId);
+            .HasIndex(b => new { b.UserId, b.Category, b.Month, b.Year })
+            .IsUnique();
 
         modelBuilder.Entity<Goal>()
             .HasOne(g => g.User)
