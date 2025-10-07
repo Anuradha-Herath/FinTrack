@@ -1,12 +1,13 @@
+using FinTrack.API.DTOs;
 using FinTrack.API.Models;
 
 namespace FinTrack.API.Services;
 
 public interface IGoalService
 {
-    Task<IEnumerable<Goal>> GetAllAsync();
-    Task<Goal?> GetByIdAsync(int id);
-    Task<Goal> CreateAsync(Goal goal);
-    Task<bool> UpdateAsync(int id, Goal goal);
-    Task<bool> DeleteAsync(int id);
+    Task<IEnumerable<GoalDto>> GetAllByUserIdAsync(int userId);
+    Task<GoalDto?> GetByIdAsync(int id, int userId);
+    Task<GoalDto> CreateAsync(GoalDto dto, int userId);
+    Task<bool> UpdateAsync(int id, GoalDto dto, int userId);
+    Task<bool> DeleteAsync(int id, int userId);
 }

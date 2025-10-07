@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FinTrack.API.Models;
+namespace FinTrack.API.DTOs;
 
-public class Goal
+public class GoalDto
 {
     public int Id { get; set; }
-    public int UserId { get; set; }
     [Required]
     public required string Title { get; set; } // e.g., "Buy a Laptop"
     [Required]
@@ -14,5 +13,5 @@ public class Goal
     [Required]
     public DateTime Deadline { get; set; }
     public string? Description { get; set; }
-    public User? User { get; set; }
+    public decimal ProgressPercentage { get; set; } // Calculated field
 }
