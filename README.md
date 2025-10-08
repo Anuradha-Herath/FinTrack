@@ -43,3 +43,19 @@ The frontend will be available at `http://localhost:5173`.
 
 - Backend: ASP.NET Core, Entity Framework Core, SQL Server, JWT
 - Frontend: React, Vite, Redux Toolkit, Tailwind CSS, Chart.js
+
+## Screenshots
+
+Below are a few screenshots from the app (stored in docs/images/):
+
+Dashboard
+
+![Dashboard Screenshot](docs/images/dashboard%202.png)
+
+Transactions
+
+![Transactions Screenshot](docs/images/transactions.png)
+
+Budget Management
+
+![Budget Management Screenshot](docs/images/budget%20management.png)
