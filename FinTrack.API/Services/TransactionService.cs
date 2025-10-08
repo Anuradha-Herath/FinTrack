@@ -142,22 +142,29 @@ public class TransactionService : ITransactionService
 
     public async Task<Dictionary<string, decimal>> GetSummaryAsync(int userId)
     {
+        // Get all transactions for the user
+        var transactions = await _transactionRepository.GetAllAsync();
+        var userTransactions = transactions.Where(t => t.UserId == userId).ToList();
+
+        // Calculate totals from actual transactions
+        var totalIncome = userTransactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+        var totalExpense = userTransactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+        var balance = totalIncome - totalExpense;
+
+        // Update user totals in database for consistency
         var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
+        if (user != null && (user.TotalIncome != totalIncome || user.TotalExpense != totalExpense))
         {
-            return new Dictionary<string, decimal>
-            {
-                { "totalIncome", 0 },
-                { "totalExpense", 0 },
-                { "balance", 0 }
-            };
+            user.TotalIncome = totalIncome;
+            user.TotalExpense = totalExpense;
+            await _userRepository.SaveChangesAsync();
         }
 
         return new Dictionary<string, decimal>
         {
-            { "totalIncome", user.TotalIncome },
-            { "totalExpense", user.TotalExpense },
-            { "balance", user.TotalIncome - user.TotalExpense }
+            { "totalIncome", totalIncome },
+            { "totalExpense", totalExpense },
+            { "balance", balance }
         };
     }
 
