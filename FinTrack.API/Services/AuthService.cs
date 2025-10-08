@@ -23,7 +23,7 @@ public class AuthService : IAuthService
     public async Task<AuthResult> RegisterAsync(RegisterDto dto)
     {
         var users = await _userRepository.GetAllAsync();
-        var existingUser = users.FirstOrDefault(u => u.Email == dto.Email);
+        var existingUser = users.FirstOrDefault(u => u.Email.ToLower() == dto.Email.ToLower());
         if (existingUser != null)
         {
             return new AuthResult { Success = false, Message = "User already exists" };
@@ -52,7 +52,7 @@ public class AuthService : IAuthService
     public async Task<AuthResult> LoginAsync(LoginDto dto)
     {
         var users = await _userRepository.GetAllAsync();
-        var user = users.FirstOrDefault(u => u.Email == dto.Email);
+        var user = users.FirstOrDefault(u => u.Email.ToLower() == dto.Email.ToLower());
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
         {
             return new AuthResult { Success = false, Message = "Invalid credentials" };

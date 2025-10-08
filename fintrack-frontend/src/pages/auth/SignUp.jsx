@@ -42,26 +42,17 @@ const SignUp = () => {
       return;
     }
 
-    try {
-      // Only send required fields to backend (exclude confirmPassword)
-      const { confirmPassword, ...registrationData } = formData;
-      const result = await authService.register(registrationData);
-      if (result.success) {
-        localStorage.setItem('token', result.token);
-        dispatch(login({ user: result.user, token: result.token }));
-        navigate('/dashboard'); // Assuming there's a dashboard route
-      } else {
-        setError(result.message || 'Registration failed');
-      }
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.Message ||
-                          'Registration failed. Please try again.';
-      setError(errorMessage);
-      console.error(error);
-    } finally {
-      setLoading(false);
+    // Only send required fields to backend (exclude confirmPassword)
+    const { confirmPassword, ...registrationData } = formData;
+    const result = await authService.register(registrationData);
+    if (result.success) {
+      localStorage.setItem('token', result.token);
+      dispatch(login({ user: result.user, token: result.token }));
+      navigate('/dashboard'); // Assuming there's a dashboard route
+    } else {
+      setError(result.message || 'Registration failed');
     }
+    setLoading(false);
   };
 
   return (

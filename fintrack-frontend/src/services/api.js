@@ -19,8 +19,8 @@ api.interceptors.response.use(
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      if (error.response.status !== 404) {
-        // Only log non-404 errors to reduce console noise during development
+      if (error.response.status !== 404 && error.response.status !== 401) {
+        // Only log non-404 and non-401 errors to reduce console noise during development
         console.error('API Error:', error.response.status, error.response.data);
       }
     } else if (error.request) {

@@ -17,24 +17,15 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    try {
-      const result = await authService.login({ email, password });
-      if (result.success) {
-        localStorage.setItem('token', result.token);
-        dispatch(login({ user: result.user, token: result.token }));
-        navigate('/dashboard'); // Assuming there's a dashboard route
-      } else {
-        setError(result.message || 'Login failed');
-      }
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.Message ||
-                          'Login failed. Please check your credentials.';
-      setError(errorMessage);
-      console.error(error);
-    } finally {
-      setLoading(false);
+    const result = await authService.login({ email, password });
+    if (result.success) {
+      localStorage.setItem('token', result.token);
+      dispatch(login({ user: result.user, token: result.token }));
+      navigate('/dashboard'); // Assuming there's a dashboard route
+    } else {
+      setError(result.message || 'Login failed');
     }
+    setLoading(false);
   };
 
   return (

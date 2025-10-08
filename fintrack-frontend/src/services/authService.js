@@ -6,8 +6,8 @@ export const authService = {
       const response = await api.post('/auth/login', credentials);
       return response.data;
     } catch (error) {
-      // Re-throw the error to let the component handle it
-      throw error;
+      // Return the error data instead of throwing to avoid console errors
+      return error.response?.data || { success: false, message: 'Login failed' };
     }
   },
   register: async (userData) => {
@@ -15,8 +15,8 @@ export const authService = {
       const response = await api.post('/auth/register', userData);
       return response.data;
     } catch (error) {
-      // Re-throw the error to let the component handle it
-      throw error;
+      // Return the error data instead of throwing to avoid console errors
+      return error.response?.data || { success: false, message: 'Registration failed' };
     }
   },
 };
