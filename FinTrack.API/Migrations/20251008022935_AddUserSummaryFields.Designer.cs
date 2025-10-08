@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinTrack.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251008020836_SeedUser")]
-    partial class SeedUser
+    [Migration("20251008022935_AddUserSummaryFields")]
+    partial class AddUserSummaryFields
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -221,19 +221,15 @@ namespace FinTrack.API.Migrations
                     b.Property<string>("ProfilePicture")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("TotalExpense")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalIncome")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            CreatedAt = new DateTime(2025, 10, 8, 2, 8, 35, 744, DateTimeKind.Utc).AddTicks(1619),
-                            Email = "test@example.com",
-                            Name = "Test User",
-                            PasswordHash = "$2a$11$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi"
-                        });
                 });
 
             modelBuilder.Entity("FinTrack.API.Models.Account", b =>

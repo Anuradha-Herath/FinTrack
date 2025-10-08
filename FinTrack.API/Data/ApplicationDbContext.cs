@@ -18,16 +18,6 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Seed data
-        modelBuilder.Entity<User>().HasData(new User
-        {
-            UserId = 1,
-            Name = "Test User",
-            Email = "test@example.com",
-            PasswordHash = "$2a$11$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
-            CreatedAt = DateTime.UtcNow
-        });
-
         // Configure relationships if needed
         modelBuilder.Entity<Account>()
             .HasOne(a => a.User)

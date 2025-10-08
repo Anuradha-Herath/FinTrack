@@ -11,7 +11,11 @@ const Transactions = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
-  const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
+  const [summary, setSummary] = useState({ 
+    totalIncome: 0, 
+    totalExpense: 0, 
+    balance: 0 
+  });
   
   // Filter states
   const [filterType, setFilterType] = useState('');
@@ -65,9 +69,19 @@ const Transactions = () => {
   const fetchSummary = async () => {
     try {
       const response = await api.get('/transactions/summary');
-      setSummary(response.data);
+      console.log('Transactions - API Summary Data:', response.data);
+      // Map the API response to our expected structure
+      const data = response.data;
+      const mappedSummary = {
+        totalIncome: data.totalIncome || 0,
+        totalExpense: data.totalExpense || 0,
+        balance: data.balance || 0
+      };
+      console.log('Transactions - Mapped Summary:', mappedSummary);
+      setSummary(mappedSummary);
     } catch (error) {
       console.error('Error fetching summary:', error);
+      // Don't show error to user, just keep zeros
     }
   };
 
@@ -217,19 +231,19 @@ const Transactions = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <SummaryCard
               title="Total Income"
-              value={`Rs. ${summary.totalIncome.toLocaleString()}`}
+              amount={summary.totalIncome}
               icon="💰"
               color="green"
             />
             <SummaryCard
               title="Total Expense"
-              value={`Rs. ${summary.totalExpense.toLocaleString()}`}
+              amount={summary.totalExpense}
               icon="💸"
               color="red"
             />
             <SummaryCard
               title="Balance"
-              value={`Rs. ${summary.balance.toLocaleString()}`}
+              amount={summary.balance}
               icon="📊"
               color={summary.balance >= 0 ? 'green' : 'red'}
             />

@@ -72,7 +72,19 @@ const Dashboard = () => {
 
         // Set summary data or use mock data
         if (summaryData.status === 'fulfilled' && summaryData.value) {
-          setSummary(summaryData.value);
+          // Map the API response to our state structure
+          const apiData = summaryData.value;
+          console.log('Dashboard - API Summary Data:', apiData);
+          setSummary({
+            totalIncome: apiData.totalIncome || 0,
+            totalExpenses: apiData.totalExpense || apiData.totalExpenses || 0,
+            netBalance: apiData.netSavings || apiData.netBalance || apiData.balance || 0,
+          });
+          console.log('Dashboard - Mapped Summary:', {
+            totalIncome: apiData.totalIncome || 0,
+            totalExpenses: apiData.totalExpense || apiData.totalExpenses || 0,
+            netBalance: apiData.netSavings || apiData.netBalance || apiData.balance || 0,
+          });
         } else {
           // Mock data if API is not ready
           console.log('Using mock data for summary');

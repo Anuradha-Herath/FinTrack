@@ -8,11 +8,13 @@ public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository _transactionRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly IUserRepository _userRepository;
 
-    public TransactionService(ITransactionRepository transactionRepository, IAccountRepository accountRepository)
+    public TransactionService(ITransactionRepository transactionRepository, IAccountRepository accountRepository, IUserRepository userRepository)
     {
         _transactionRepository = transactionRepository;
         _accountRepository = accountRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<IEnumerable<TransactionDto>> GetAllByUserIdAsync(int userId)
@@ -73,6 +75,9 @@ public class TransactionService : ITransactionService
             await UpdateAccountBalance(dto.AccountId.Value, dto.Amount, dto.Type);
         }
 
+        // Update user totals
+        await UpdateUserTotals(userId, dto.Amount, dto.Type);
+
         dto.Id = transaction.Id;
         return dto;
     }
@@ -90,6 +95,9 @@ public class TransactionService : ITransactionService
                 transaction.Type == "Income" ? "Expense" : "Income");
         }
 
+        // Revert old user totals
+        await UpdateUserTotals(userId, transaction.Amount, transaction.Type == "Income" ? "Expense" : "Income");
+
         transaction.Type = dto.Type;
         transaction.Category = dto.Category;
         transaction.Amount = dto.Amount;
@@ -104,6 +112,9 @@ public class TransactionService : ITransactionService
         {
             await UpdateAccountBalance(dto.AccountId.Value, dto.Amount, dto.Type);
         }
+
+        // Apply new user totals
+        await UpdateUserTotals(userId, dto.Amount, dto.Type);
 
         return true;
     }
@@ -121,6 +132,9 @@ public class TransactionService : ITransactionService
                 transaction.Type == "Income" ? "Expense" : "Income");
         }
 
+        // Revert user totals
+        await UpdateUserTotals(userId, transaction.Amount, transaction.Type == "Income" ? "Expense" : "Income");
+
         _transactionRepository.Remove(transaction);
         await _transactionRepository.SaveChangesAsync();
         return true;
@@ -128,21 +142,22 @@ public class TransactionService : ITransactionService
 
     public async Task<Dictionary<string, decimal>> GetSummaryAsync(int userId)
     {
-        var transactions = await _transactionRepository.GetByUserIdAsync(userId);
-        
-        var totalIncome = transactions
-            .Where(t => t.Type == "Income")
-            .Sum(t => t.Amount);
-        
-        var totalExpense = transactions
-            .Where(t => t.Type == "Expense")
-            .Sum(t => t.Amount);
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return new Dictionary<string, decimal>
+            {
+                { "totalIncome", 0 },
+                { "totalExpense", 0 },
+                { "balance", 0 }
+            };
+        }
 
         return new Dictionary<string, decimal>
         {
-            { "totalIncome", totalIncome },
-            { "totalExpense", totalExpense },
-            { "balance", totalIncome - totalExpense }
+            { "totalIncome", user.TotalIncome },
+            { "totalExpense", user.TotalExpense },
+            { "balance", user.TotalIncome - user.TotalExpense }
         };
     }
 
@@ -160,6 +175,23 @@ public class TransactionService : ITransactionService
                 account.Balance -= amount;
             }
             await _accountRepository.SaveChangesAsync();
+        }
+    }
+
+    private async Task UpdateUserTotals(int userId, decimal amount, string type)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user != null)
+        {
+            if (type == "Income")
+            {
+                user.TotalIncome += amount;
+            }
+            else if (type == "Expense")
+            {
+                user.TotalExpense += amount;
+            }
+            await _userRepository.SaveChangesAsync();
         }
     }
 

@@ -15,6 +15,8 @@ public class User
     public required string PasswordHash { get; set; }
     public string? ProfilePicture { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public decimal TotalIncome { get; set; } = 0;
+    public decimal TotalExpense { get; set; } = 0;
     public ICollection<Account>? Accounts { get; set; }
     public ICollection<Transaction>? Transactions { get; set; }
     public ICollection<Budget>? Budgets { get; set; }
