@@ -25,7 +25,6 @@ const Dashboard = () => {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
   
   // Dashboard data states
   const [summary, setSummary] = useState({
@@ -230,11 +229,6 @@ const Dashboard = () => {
     return new Date().toLocaleDateString('en-US', options);
   };
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
   if (loading) {
     return (
       <div className="flex">
@@ -247,33 +241,23 @@ const Dashboard = () => {
   }
 
   return (
-    <div className={`flex min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       
       <div className="flex-1 ml-64">
         {/* Header Section */}
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-8 py-6 sticky top-0 z-10`}>
+        <div className="bg-white border-gray-200 border-b px-8 py-6 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              <h1 className="text-3xl font-bold text-gray-800">
                 Welcome back, {userProfile?.name || user?.name || 'User'}! 👋
               </h1>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+              <p className="text-gray-600 mt-1">
                 {getCurrentDate()}
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <button
-                onClick={toggleDarkMode}
-                className={`px-4 py-2 rounded-lg ${
-                  darkMode
-                    ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                } transition-colors`}
-              >
-                {darkMode ? '☀️ Light' : '🌙 Dark'}
-              </button>
-              <div className={`px-6 py-3 rounded-lg ${darkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-50 text-blue-600'}`}>
+              <div className="px-6 py-3 rounded-lg bg-blue-50 text-blue-600">
                 <p className="text-sm font-medium">Total Balance</p>
                 <p className="text-2xl font-bold">
                   ${(summary?.netBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -318,15 +302,15 @@ const Dashboard = () => {
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Income vs Expenses Bar Chart */}
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}>
-              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'} mb-4`}>
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
                 Income vs Expenses
               </h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={incomeExpenseData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#E5E7EB'} />
-                  <XAxis dataKey="month" stroke={darkMode ? '#9CA3AF' : '#6B7280'} />
-                  <YAxis stroke={darkMode ? '#9CA3AF' : '#6B7280'} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="month" stroke="#6B7280" />
+                  <YAxis stroke="#6B7280" />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <Bar dataKey="income" fill="#10B981" name="Income" radius={[8, 8, 0, 0]} />
@@ -336,8 +320,8 @@ const Dashboard = () => {
             </div>
 
             {/* Expense Breakdown Pie Chart */}
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}>
-              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'} mb-4`}>
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
                 Expense Breakdown
               </h2>
               <ResponsiveContainer width="100%" height={300}>
@@ -363,9 +347,9 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Transactions Section */}
-          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}>
+          <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              <h2 className="text-xl font-bold text-gray-800">
                 Recent Transactions
               </h2>
               <button
@@ -379,12 +363,12 @@ const Dashboard = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className={`border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                    <th className={`text-left py-3 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-semibold`}>Date</th>
-                    <th className={`text-left py-3 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-semibold`}>Type</th>
-                    <th className={`text-left py-3 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-semibold`}>Category</th>
-                    <th className={`text-left py-3 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-semibold`}>Description</th>
-                    <th className={`text-right py-3 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-semibold`}>Amount</th>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Date</th>
+                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Type</th>
+                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Category</th>
+                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Description</th>
+                    <th className="text-right py-3 px-4 text-gray-600 font-semibold">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -392,9 +376,9 @@ const Dashboard = () => {
                     recentTransactions.map((transaction) => (
                       <tr
                         key={transaction.id}
-                        className={`border-b ${darkMode ? 'border-gray-700 hover:bg-gray-750' : 'border-gray-100 hover:bg-gray-50'} transition-colors`}
+                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                       >
-                        <td className={`py-4 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <td className="py-4 px-4 text-gray-700">
                           {new Date(transaction.date).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -411,10 +395,10 @@ const Dashboard = () => {
                             {transaction.type || (transaction.amount > 0 ? 'Income' : 'Expense')}
                           </span>
                         </td>
-                        <td className={`py-4 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <td className="py-4 px-4 text-gray-700">
                           {transaction.category?.name || transaction.category || 'N/A'}
                         </td>
-                        <td className={`py-4 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <td className="py-4 px-4 text-gray-700">
                           {transaction.description}
                         </td>
                         <td className={`py-4 px-4 text-right font-semibold ${
@@ -432,7 +416,7 @@ const Dashboard = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className={`py-8 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td colSpan="5" className="py-8 text-center text-gray-500">
                         No transactions found. Start adding transactions to see them here.
                       </td>
                     </tr>
