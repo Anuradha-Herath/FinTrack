@@ -42,16 +42,6 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     if (!token && !isAuthenticated) {
       navigate('/login');
-    } else {
-      // Log helpful message for developers
-      console.log('%c🎉 FinTrack Dashboard Loaded', 'color: #10B981; font-size: 16px; font-weight: bold;');
-      console.log('%cUsing mock data for demonstration since backend endpoints are not yet available.', 'color: #6B7280; font-size: 12px;');
-      console.log('%cTo connect to real data, implement these backend endpoints:', 'color: #6B7280; font-size: 12px;');
-      console.log('  • GET /api/reports/summary');
-      console.log('  • GET /api/reports/income-expense-summary');
-      console.log('  • GET /api/reports/transactions-by-category');
-      console.log('  • GET /api/transactions?limit=10');
-      console.log('  • GET /api/auth/profile');
     }
   }, [isAuthenticated, navigate]);
 
@@ -70,7 +60,7 @@ const Dashboard = () => {
           dashboardService.getRecentTransactions(10),
         ]);
 
-        // Set summary data or use mock data
+        // Set summary data
         if (summaryData.status === 'fulfilled' && summaryData.value) {
           // Map the API response to our state structure
           const apiData = summaryData.value;
@@ -86,95 +76,36 @@ const Dashboard = () => {
             netBalance: apiData.netSavings || apiData.netBalance || apiData.balance || 0,
           });
         } else {
-          // Mock data if API is not ready
-          console.log('Using mock data for summary');
+          // API failed, set empty data
           setSummary({
-            totalIncome: 15000,
-            totalExpenses: 8500,
-            netBalance: 6500,
+            totalIncome: 0,
+            totalExpenses: 0,
+            netBalance: 0,
           });
         }
 
-        // Set income/expense chart data or use mock data
+        // Set income/expense chart data
         if (incomeExpenseData.status === 'fulfilled' && incomeExpenseData.value && incomeExpenseData.value.length > 0) {
           setIncomeExpenseData(incomeExpenseData.value);
         } else {
-          // Mock data for income vs expenses by month
-          console.log('Using mock data for income/expense chart');
-          setIncomeExpenseData([
-            { month: 'Jan', income: 5000, expenses: 3200 },
-            { month: 'Feb', income: 5500, expenses: 2800 },
-            { month: 'Mar', income: 4800, expenses: 3500 },
-            { month: 'Apr', income: 6200, expenses: 4000 },
-            { month: 'May', income: 5800, expenses: 3700 },
-            { month: 'Jun', income: 6500, expenses: 4200 },
-          ]);
+          // API failed, set empty data
+          setIncomeExpenseData([]);
         }
 
-        // Set category data or use mock data
+        // Set category data
         if (categoryData.status === 'fulfilled' && categoryData.value && categoryData.value.length > 0) {
           setCategoryData(categoryData.value);
         } else {
-          // Mock data for expense breakdown by category
-          console.log('Using mock data for category chart');
-          setCategoryData([
-            { name: 'Food & Dining', value: 2500, percentage: 29.4 },
-            { name: 'Transportation', value: 1800, percentage: 21.2 },
-            { name: 'Shopping', value: 1500, percentage: 17.6 },
-            { name: 'Bills & Utilities', value: 1200, percentage: 14.1 },
-            { name: 'Entertainment', value: 1000, percentage: 11.8 },
-            { name: 'Others', value: 500, percentage: 5.9 },
-          ]);
+          // API failed, set empty data
+          setCategoryData([]);
         }
 
-        // Set recent transactions or use mock data
+        // Set recent transactions
         if (transactionsData.status === 'fulfilled' && transactionsData.value && transactionsData.value.length > 0) {
           setRecentTransactions(transactionsData.value);
         } else {
-          // Mock data for recent transactions
-          console.log('Using mock data for transactions');
-          setRecentTransactions([
-            {
-              id: 1,
-              date: '2025-10-06',
-              type: 'Expense',
-              category: 'Food & Dining',
-              description: 'Grocery shopping',
-              amount: -125.50,
-            },
-            {
-              id: 2,
-              date: '2025-10-05',
-              type: 'Income',
-              category: 'Salary',
-              description: 'Monthly salary',
-              amount: 5000.00,
-            },
-            {
-              id: 3,
-              date: '2025-10-05',
-              type: 'Expense',
-              category: 'Transportation',
-              description: 'Gas station',
-              amount: -45.00,
-            },
-            {
-              id: 4,
-              date: '2025-10-04',
-              type: 'Expense',
-              category: 'Entertainment',
-              description: 'Movie tickets',
-              amount: -30.00,
-            },
-            {
-              id: 5,
-              date: '2025-10-03',
-              type: 'Expense',
-              category: 'Bills & Utilities',
-              description: 'Electric bill',
-              amount: -120.00,
-            },
-          ]);
+          // API failed, set empty data
+          setRecentTransactions([]);
         }
 
         // Try to get user profile
@@ -198,15 +129,17 @@ const Dashboard = () => {
 
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
-        // Don't show error since we're using mock data fallback
-        // setError('Failed to load dashboard data. Using sample data for demonstration.');
+        setError('Failed to load dashboard data. Please try again later.');
         
-        // Ensure we have default data even on complete failure
+        // Set empty data on complete failure
         setSummary({
-          totalIncome: 15000,
-          totalExpenses: 8500,
-          netBalance: 6500,
+          totalIncome: 0,
+          totalExpenses: 0,
+          netBalance: 0,
         });
+        setIncomeExpenseData([]);
+        setCategoryData([]);
+        setRecentTransactions([]);
       } finally {
         setLoading(false);
       }
