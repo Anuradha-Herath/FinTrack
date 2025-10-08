@@ -78,18 +78,18 @@ const BudgetCard = ({ budget, onEdit, onDelete }) => {
       <div className="space-y-3 mb-4">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Budget Limit:</span>
-          <span className="font-semibold text-gray-800">${limitAmount.toFixed(2)}</span>
+          <span className="font-semibold text-gray-800">₨{limitAmount.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Spent:</span>
           <span className={`font-semibold ${spentAmount > limitAmount ? 'text-red-600' : 'text-gray-800'}`}>
-            ${spentAmount.toFixed(2)}
+            ₨{spentAmount.toFixed(2)}
           </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Remaining:</span>
           <span className={`font-semibold ${remainingAmount < 0 ? 'text-red-600' : 'text-green-600'}`}>
-            ${remainingAmount.toFixed(2)}
+            ₨{remainingAmount.toFixed(2)}
           </span>
         </div>
       </div>
@@ -110,7 +110,7 @@ const BudgetCard = ({ budget, onEdit, onDelete }) => {
         </div>
         {progressPercentage > 100 && (
           <p className="text-xs text-red-600 mt-1">
-            ⚠️ Exceeded budget by ${(spentAmount - limitAmount).toFixed(2)}
+            ⚠️ Exceeded budget by ₨{(spentAmount - limitAmount).toFixed(2)}
           </p>
         )}
       </div>

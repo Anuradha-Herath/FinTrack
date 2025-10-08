@@ -237,7 +237,7 @@ const Budgets = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Total Limit</p>
-                <p className="text-2xl font-bold text-gray-800 mt-1">${summary.totalLimit.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-gray-800 mt-1">₨{summary.totalLimit.toFixed(2)}</p>
               </div>
               <div className="bg-green-100 rounded-full p-3">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +251,7 @@ const Budgets = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Total Spent</p>
-                <p className="text-2xl font-bold text-gray-800 mt-1">${summary.totalSpent.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-gray-800 mt-1">₨{summary.totalSpent.toFixed(2)}</p>
               </div>
               <div className="bg-purple-100 rounded-full p-3">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
