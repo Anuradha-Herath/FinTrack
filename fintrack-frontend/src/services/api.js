@@ -19,10 +19,13 @@ api.interceptors.response.use(
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.error('API Error:', error.response.status, error.response.data);
+      if (error.response.status !== 404 && error.response.status !== 401) {
+        // Only log non-404 and non-401 errors to reduce console noise during development
+        console.error('API Error:', error.response.status, error.response.data);
+      }
     } else if (error.request) {
       // The request was made but no response was received
-      console.error('Network Error:', error.request);
+      console.error('Network Error: Unable to reach server');
     } else {
       // Something happened in setting up the request that triggered an Error
       console.error('Error:', error.message);

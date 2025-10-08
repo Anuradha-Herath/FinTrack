@@ -2,7 +2,9 @@ namespace FinTrack.API.DTOs;
 
 public class UserDto
 {
-    public int Id { get; set; }
-    public required string Username { get; set; }
+    public int UserId { get; set; }
+    public required string Name { get; set; }
     public required string Email { get; set; }
+    public string? Phone { get; set; }
+    public string? ProfilePicture { get; set; }
 }

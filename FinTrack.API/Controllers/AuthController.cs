@@ -1,6 +1,8 @@
 using FinTrack.API.DTOs;
 using FinTrack.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FinTrack.API.Controllers;
 
@@ -35,5 +37,24 @@ public class AuthController : ControllerBase
             return Ok(result);
         }
         return Unauthorized(result);
+    }
+
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<IActionResult> GetProfile()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var profile = await _authService.GetUserProfileAsync(int.Parse(userId));
+        if (profile == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(profile);
     }
 }
