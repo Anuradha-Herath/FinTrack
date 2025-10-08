@@ -59,3 +59,11 @@ Transactions
 Budget Management
 
 ![Budget Management Screenshot](docs/images/budget%20management.png)
+
+Reports
+
+![Reports Screenshot](docs/images/reprots.png)
+
+Goals
+
+![Goals Screenshot](docs/images/finacial%20goals.png)
