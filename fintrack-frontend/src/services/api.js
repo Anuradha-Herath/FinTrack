@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // backend URL
+  baseURL: 'https://fintrack-api.azurewebsites.net/api', // backend URL
 });
 
 api.interceptors.request.use((config) => {
